@@ -555,13 +555,13 @@ Now try this yourself on the **licorice** dataset.
 Add p values for this comparison. <br>
 Which predictor variables do you think will be significant?
 
-```{r tbl_sum3, exercise = TRUE, exercise.lines = 9}
+```{r tbl_sum4, exercise = TRUE, exercise.lines = 9}
 licorice  %>% 
   select(gender, smoking, mallampati, treat, preOp_age) %>% 
   tbl_summary(by = treat)
 ```
 
-```{r tbl_sum3-solution}
+```{r tbl_sum4-solution}
 licorice  %>% 
   select(gender, smoking, mallampati, treat, preOp_age) %>% 
   tbl_summary(by = treat) %>% 
