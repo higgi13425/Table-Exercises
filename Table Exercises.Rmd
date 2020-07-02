@@ -11,6 +11,7 @@ library(gtsummary)
 library(janitor)
 library(tidyverse)
 library(medicaldata)
+library(gt)
 knitr::opts_chunk$set(echo = TRUE)
 
 supra <- medicaldata::supraclavicular %>% 
