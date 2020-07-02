@@ -1,0 +1,389 @@
+---
+title: "Table Exercises"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(flextable)
+library(gtsummary)
+library(janitor)
+library(tidyverse)
+library(medicaldata)
+knitr::opts_chunk$set(echo = TRUE)
+
+supra <- medicaldata::supraclavicular %>% 
+  mutate(gender = factor(gender)) %>% 
+  mutate(gender = fct_recode(gender,
+        "male" = "1", "female" = "0"))  %>% 
+  mutate(group = fct_recode(as.factor(group),
+        "Mixture" = "1", "Sequential" = "2")) 
+
+blood <- medicaldata::blood_storage %>% 
+  mutate(aa = factor(AA)) %>% 
+  mutate(aa = fct_recode(aa,
+      "Not AA" = "0", 
+      "African-American" = "1"))  %>% 
+    mutate(fam_hx = factor(FamHx)) %>% 
+  mutate(fam_hx = fct_recode(fam_hx,
+      "No History" = "0", 
+      "Family History of PCa" = "1"))  %>% 
+  mutate(rbc_age = factor(RBC.Age.Group)) %>% 
+  mutate(rbc_age = fct_recode(rbc_age,
+   "Younger" = "1", "Middle" = "2",
+   "Older" = "3")) %>% 
+  mutate(tumor_vol = factor(TVol)) %>% 
+  mutate(tumor_vol= fct_recode(tumor_vol,
+     "Low" = "1", "Medium" = "2",
+      "Extensive" = "3")) %>% 
+  mutate(gleason = factor(bGS)) %>% 
+  mutate(gleason= fct_recode(gleason,
+     "score 0-6" = "1", "score 7" = "2",
+    "score 8-10" = "3")) %>% 
+  mutate(recur = factor(Recurrence)) %>% 
+  mutate(recur= fct_recode(recur,
+     "No Recurrence" = "0", "Tumor Recurred" = "1"))
+
+licorice <- medicaldata::licorice_gargle %>% 
+  mutate(gender = factor(preOp_gender)) %>% 
+  mutate(gender = fct_recode(gender,
+          "Male" = "0", "Female" = "1"))  %>% 
+  mutate(smoking = factor(preOp_smoking)) %>% 
+  mutate(smoking = fct_recode(smoking,
+      "Current" = "1", "Past" = "2",
+          "Never" = "3")) %>% 
+  mutate(mallampati = factor(preOp_mallampati)) %>% 
+  mutate(treat = factor(treat)) %>% 
+  mutate(treat= fct_recode(treat,
+   "Sugar" = "0", "Licorice" = "1")) 
+```
+
+
+## Making Summary Tables
+Let's work on how to make summary tables     
+
+First, let's introduce our three data sets for today    
+
+The **supraclavicular data set** contains data on 103 subjects undergoing upper extremity procedures and receiving supraclavicular anesthesia. They were randomly assigned to a combination of ropivacaine and mepivacaine or sequential mepivacaine followed by ropivacaine. The primary outcome is time to onset of 4-nerve sensory block.
+<br>
+<br>
+
+The **licorice gargle data set** contains data on 236 subjects undergoing thoracic surgery  with intubation. They were randomly assigned to a gargle of sugar water vs. licorice before anesthesia. The primary outcome is throat pain at 30 minutest post procedure in the PACU.  <br>
+<br>
+
+The **blood storage data set** contains data on 316 subjects after radical prostatectomy who received blood transfusion within 30 days of their surgery and had available PSA follow-up data. The main exposure of interest was the RBC storage duration time. It is suspected that transfusion of older blood causes immunosuppression and could increase cancer recurrence.
+<br>
+<br>
+
+### Using {gtsummary} to count by groups
+Look at this chunk of code and its output.
+What does each line of code do?
+
+```{r tbl_sum1}
+supra %>% 
+  select(gender, bmi, age, group) %>% 
+  tbl_summary(by = group) 
+```
+
+#### Your Turn!
+Now try this on the  blood data set, using the variables age, aa, and tumor_vol, divided by rbc_age categories, in the exercise below
+(Note - don't eliminate rbc_age with your select statement)
+
+```{r tbl_sum2, exercise =TRUE, exercise.lines = 7}
+blood %>% 
+  select(Age, aa, tumor_vol, rbc_age)
+```
+
+```{r tbl_sum2-hint}
+blood %>% 
+  select(Age, aa, tumor_vol, rbc_age)
+```
+
+```{r tbl_sum2-solution}
+blood %>% 
+  select(Age, aa, tumor_vol, rbc_age) %>% 
+  tbl_summary(by = rbc_age)
+```
+
+
+#### Adding p values for Comparisons with {gtsummary}
+
+You can add comparative P values easily,
+see the chunk below (and its output) for an example.
+
+```{r}
+supra %>% 
+  select(gender, bmi, age, group) %>% 
+  tbl_summary(by = group) %>% 
+  add_p()
+```
+
+#### Your turn!
+Now try this yourself on the blood dataset. 
+Add p values for this comparison. <br>
+Which predictor variables do you think will be significant?
+
+```{r tbl_sum3, exercise = TRUE, exercise.lines = 9}
+blood %>% 
+  select(Age, aa, FamHx, recur, rbc_age) %>% 
+  tbl_summary(by = recur,
+  label = list(aa ~ "African-American",
+                FamHx ~ "Family History of Prostate Ca",
+               rbc_age ~ "Age of Transfused RBC"))
+```
+
+```{r tbl_sum3-solution}
+blood %>% 
+  select(Age, aa, FamHx, recur, rbc_age) %>% 
+  tbl_summary(by = recur,
+  label = list(aa ~ "African-American",
+                FamHx ~ "Family History of Prostate Ca",
+               rbc_age ~ "Age of Transfused RBC")) %>% 
+  add_p()
+```
+
+## Summarizing with Dplyr
+### Simple dyplyr grouping and counting
+Here is a simple way to get counts by groups with a familiar friend, dplyr.
+Examine the code chunk below to see an example of counts by African-American status, Gleason Score category, and Tumor Volume category.
+```{r}
+blood %>% 
+  group_by(aa) %>% 
+  count(gleason, tumor_vol)
+```
+
+#### Your turn!
+Use the licorice data to get counts across several categories:
+ grouped by gender, <br>
+ with counts of preOp_asa and smoking    
+ edit the chunk below to get a table of counts.
+
+```{r dplyr, exercise = TRUE, exercise.lines = 9}
+licorice 
+
+
+```
+
+```{r dplyr-hint}
+licorice %>% 
+  group_by(gender)
+```
+
+```{r dplyr-solution}
+licorice %>% 
+  group_by(gender) %>% 
+  count(preOp_asa, smoking)
+```
+
+## Counting in Tabyls with {janitor}
+Counts can also be obtained in 2 by 2 tables with the _tabyl_ function from the {janitor} package. Review the example below and its output to see how this works.
+```{r}
+blood %>% 
+  tabyl(gleason, tumor_vol)
+```
+
+
+### Simple janitor tabyl with percentages
+We can make this fancier with percentages, rather than just counts.
+See the example below to see how this is done.
+```{r}
+blood %>% 
+  tabyl(aa, tumor_vol) %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+```
+
+#### Your turn!
+Now try this with the licorice dataset, making a table of gender by smoking.
+Add nicely formatted percentages and Ns.
+```{r tabyl, exercise = TRUE, exercise.lines = 7}
+licorice
+```
+
+```{r tabyl-hint}
+licorice %>% 
+  tabyl(gender, smoking)
+```
+
+```{r tabyl-solution}
+licorice %>% 
+  tabyl(gender, smoking) %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns()
+```
+### {janitor} tabyl with Totals and Titles
+
+Here is an example of how to improve a simple 2 x 2 table with the {janitor} package function _tabyl_ by adding totals rows/columns and titles.
+Note that the placement argument can also be "top" - try this variant after you run the chunk below.
+
+```{r}
+supra %>% 
+  tabyl(gender, group) %>% 
+  adorn_totals(where = c("row", "col")) %>% 
+  adorn_title(row_name = "Gender", 
+              col_name = "Group Assigned",
+              placement = "combined")
+```
+#### Your turn!
+Make a nicely titled tabyl with totals and titles from the blood datset, from the variables fam_hx and recur.
+
+```{r tabyl2, exercise = TRUE, exercise.lines = 7}
+blood
+```
+
+```{r tabyl2-hint}
+blood %>% 
+  tabyl(fam_hx, recur)
+```
+
+
+```{r tabyl2-solution}
+blood %>% 
+  tabyl(fam_hx, recur) %>% 
+  adorn_totals(where = c("row", "col")) %>% 
+  adorn_title(row_name = "Family History", 
+              col_name = "Tumor Recurrence",
+              placement = "top")
+```
+
+### {janitor} tabyl with pct, without NAs
+Missing data, or NAs, are included as a category by default.
+This is a good thing, so that you don't miss the presence of missing data.
+But it is problematic if you are trying to do a chi square or fisher exact test.
+You can just make the _show_na_ argument false.
+See the code chunk below for an example.
+
+```{r}
+blood %>% 
+  tabyl(gleason, tumor_vol, show_na = F)
+```
+
+### Adding  chi squared test to a janitor tabyl 
+ Once the NA values are removed, you can then do a chi squared test.
+ Just add one line, as in the code chunk below.
+```{r}
+blood %>% 
+  tabyl(gleason, tumor_vol, show_na = F) %>% 
+  chisq.test()
+```
+ 
+### Your turn!
+Now try this with the supraclavicular data,
+with a table of group and gender.
+
+```{r chi, exercise = TRUE, exercise.lines = 7}
+supra 
+```
+
+
+```{r chi-hint}
+supra %>% 
+  tabyl(group, gender)
+```
+
+```{r chi-solution}
+supra %>% 
+  tabyl(group, gender) %>% 
+  chisq.test()
+```
+
+## Regression tables with gtsummary
+
+You can easily summarize a linear regression with the {gtsummary} package function _tbl_regression()_
+
+Review the chunk below for an example.
+Longer onset (more minutes) is a bad outcome. 
+Which variables favor a worse outcome?
+Are any significant?
+
+```{r regress, exercise = TRUE, exercise.lines = 7}
+supra_model_tbl <- lm(onset_sensory ~ gender + group + midazolam + age + subject, 
+                      data = supra) %>% 
+  tbl_regression() 
+
+supra_model_tbl
+```
+### Your turn!
+Try to summarize in a table this model (in the blood dataset) for recurrence of prostate cancer with _tbl_summary_ from the {gtsummary} package.
+Be sure to add the exponentiate = TRUE option to get odds ratios when you use _tbl_summary()_
+
+```{r logistic_blood, exercise = TRUE, exercise.lines = 7}
+model_recur_tbl <- glm(Recurrence ~ aa + fam_hx + rbc_age + tumor_vol + gleason,
+                   data = blood)
+
+
+model_recur_tbl
+```
+
+```{r logistic_blood-hint}
+model_recur_tbl <- glm(Recurrence ~ aa + fam_hx + rbc_age + tumor_vol + gleason,
+                   data = blood) %>% 
+   tbl_regression() 
+
+
+model_recur_tbl
+```
+
+```{r logistic_blood-solution}
+model_recur_tbl <- glm(Recurrence ~ aa + fam_hx + rbc_age + tumor_vol + gleason,
+                   data = blood) %>% 
+   tbl_regression(exponentiate = TRUE) 
+
+
+model_recur_tbl
+```
+## Builing up side by side tables
+
+You can also combine tables with the _tbl_merge_ function from {gtsummary}
+Here is an example of a summary table and a modeling table.
+
+### Quick Summary Table with gtsummary
+First, this code chunk makes the summary table. 
+```{r}
+summ_tbl1 <- licorice %>% 
+  select(gender, preOp_age, treat) %>% 
+  tbl_summary(missing = "no") %>% 
+  add_n()
+summ_tbl1
+```
+
+
+
+### Regression table with gtsummary
+Then this code chunk makes the regression table 
+```{r}
+mod_tbl2 <- lm(pacu30min_throatPain ~ gender + smoking + mallampati + treat, data = licorice) %>% 
+  tbl_regression()
+mod_tbl2
+```
+
+### Now merge these tables
+Then you can merge these and add two tab spanners.
+
+```{r}
+tbl_merge(
+  list(summ_tbl1, mod_tbl2),
+  tab_spanner = c("**Summary Statistics**",
+                  "**30 Min Cough Outcome**")
+)
+```
+
+
+#### Your turn!
+1. Make a summary table from the supra dataset - group, gender, bmi, and age
+2. Make a regression summary model from the blood dataset with the outcome of onset_motor, and the predictors group, gender, bmi, age, and fentanyl
+3. use _tbl_merge_ and some appropriate spanner text to merge these tables.
+
+```{r, error=TRUE}
+summ_tbl_blood
+
+
+regress_tbl_blood
+
+
+merged_tbl_blood
+```
+

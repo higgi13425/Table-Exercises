@@ -1,0 +1,12 @@
+name: table_exercises
+title: table_exercises
+username:
+account: pdrhiggins
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2505661
+bundleId: 3317881
+url: https://pdrhiggins.shinyapps.io/table_exercises/
+when: 1593137458.3222
+asMultiple: FALSE
+asStatic: FALSE
