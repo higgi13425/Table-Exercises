@@ -657,13 +657,134 @@ tbl_merge(
 2. Make a regression summary model from the blood dataset with the outcome of onset_motor, and the predictors group, gender, bmi, age, and fentanyl
 3. use _tbl_merge_ and some appropriate spanner text to merge these tables.
 
-```{r, error=TRUE}
-summ_tbl_blood
+```{r final, exercise = TRUE, exercise.lines = 15}
+summ_tbl_supra
 
 
-regress_tbl_blood
+regress_tbl_supra
 
 
 merged_tbl_blood
+
 ```
 
+```{r final-hint}
+summ_tbl_supra <- supra %>% 
+  select(group, gender, bmi, age)
+
+regress_tbl_supra <- lm(onset_motor ~ group + gender + bmi + age +fentanyl, data = supra)
+
+
+merged_tbl_blood <-  tbl_merge(list(summ_tbl_supra, regress_tbl_supra))
+
+```
+
+
+```{r final-solution}
+summ_tbl_supra <- supra %>% 
+  select(group, gender, bmi, age) %>% 
+  tbl_summary() %>% 
+  add_n()
+summ_tbl_supra
+
+
+regress_tbl_supra <- lm(onset_motor ~ group + gender + bmi + age +fentanyl, data = supra) %>% 
+  tbl_regression()
+regress_tbl_supra
+
+merged_tbl_blood <-  tbl_merge(list(summ_tbl_supra, regress_tbl_supra),
+            tab_spanner = c("**Summary Statistics**",
+                  "**Onset Motor Outcome**"))
+merged_tbl_blood
+```
+
+## Final Quizzes
+
+```{r dplyr-quiz-1, echo=FALSE}
+quiz(caption = "Dplyr Quiz",
+  question("Which function in dplyr counts all the rows?",
+    answer("summarise()"),
+    answer("mutate()"),
+    answer("tally()", correct = TRUE),
+    answer("count()")
+  ),
+  question("Which function in dplyr counts rows by group (then ungroups)?",
+    answer("count()", correct = TRUE),
+    answer("tally()"),
+    answer("filter()"),
+    answer("n()")
+  ),
+    question("Which function in dplyr adds the total number of rows as a variable to your dataframe?",
+    answer("add_count()"),
+    answer("mutate()"),
+    answer("add_tally()", correct = TRUE),
+    answer("transmute()")
+  ),
+  question("Which function in dplyr adds the total number of rows *in each group* as a variable to your dataframe?",
+    answer("add_count()", correct = TRUE),
+    answer("select()"),
+    answer("add_tally()"),
+    answer("relocate()")
+  )
+)
+```
+
+```{r janitor-quiz-1, echo=FALSE}
+quiz(caption = "Janitor Tabyl Quiz",
+  question("Which function in janitor makes tables?",
+    answer("clean_names()"),
+    answer("get_dupes()"),
+    answer("tabyl()", correct = TRUE),
+    answer("remove_empty()")
+  ),
+  question("Which function in janitor adds totals to rows or columns of tabyls?",
+    answer("adorn_totals()", correct = TRUE),
+    answer("adorn_title()"),
+    answer("remove_constant()"),
+    answer("round_half_up()")
+  ),
+    question("Which function in janitor adds percentages to rows in tabyls?",
+    answer("tabyl()"),
+    answer("adorn_percentages('row')", correct = TRUE),
+    answer("adorn_title()"),
+    answer("adorn_pct_formatting()")
+  ),
+  question("Which function in janitor formats percentages to 2 digits?",
+    answer("adorn_pct_formatting(digits=2)", correct = TRUE),
+    answer("adorn_percentages()"),
+    answer("adorn_ns()"),
+    answer("adorn_totals('row')")
+  )
+)
+```
+
+
+```{r gtsummary-quiz-1, echo=FALSE}
+quiz(caption = "gtsummary Quiz",
+  question("Which function in gtsummary makes summary tables?",
+    answer("add_p()"),
+    answer("modify_header()"),
+    answer("tbl_summary()", correct = TRUE),
+    answer("bold_labels()")
+  ),
+  question("Which function in gtsummary makes regression tables?",
+    answer("adorn_totals()", correct = TRUE),
+    answer("add_n()"),
+    answer("as_gt()"),
+    answer("as_flextable()")
+  ),
+    question("Which argument in gtsummary::tbl_summary lets you compare study arms in columns?",
+    answer("italicize_labels()"),
+    answer("by = treatment_arm", correct = TRUE),
+    answer("statistic = list(all_continuous() ~ '{mean} ({sd})'"),
+    answer("bold_p(t = 0.2)")
+  ),
+  question("Which argument in gtsummary::tbl_summary lets you control the formatting of your data?",
+    answer("statistic = list(all_continuous() ~ '{mean} ({sd})',
+                     all_categorical() ~ '{n} / {N} ({p}%)'),", correct = TRUE),
+    answer("digits = list('marker' ~ c(1, 2))"),
+    answer("add_stat_label()"),
+    answer(" modify_header(stat_by = '**{level}**, N = {n}'")
+  )
+)
+```
