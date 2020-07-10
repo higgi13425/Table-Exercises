@@ -768,7 +768,7 @@ quiz(caption = "gtsummary Quiz",
     answer("bold_labels()")
   ),
   question("Which function in gtsummary makes regression tables?",
-    answer("adorn_totals()", correct = TRUE),
+    answer("tbl_regression()", correct = TRUE),
     answer("add_n()"),
     answer("as_gt()"),
     answer("as_flextable()")
@@ -782,7 +782,7 @@ quiz(caption = "gtsummary Quiz",
   question("Which argument in gtsummary::tbl_summary lets you control the formatting of your data?",
     answer("statistic = list(all_continuous() ~ '{mean} ({sd})',
                      all_categorical() ~ '{n} / {N} ({p}%)'),", correct = TRUE),
-    answer("digits = list('marker' ~ c(1, 2))"),
+    answer("by = treatment_arm"),
     answer("add_stat_label()"),
     answer(" modify_header(stat_by = '**{level}**, N = {n}'")
   )
